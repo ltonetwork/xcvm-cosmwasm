@@ -38,7 +38,7 @@ ibc3 = ["stargate"]
 base64 = "0.13.0"
 cosmwasm-derive = { path = "../derive", version = "1.0.0" }
 uint = "0.9.3"
-serde-json-wasm = { version = "0.4.1" }
+serde-json-wasm = { git = "https://github.com/hussein-aitlahcen/serde-json-wasm", rev = "529956ce1dd3d1a4905e8f640f778ac881693279" }
 schemars = "0.8.1"
 serde = { version = "1.0.103", default-features = false, features = ["derive", "alloc"] }
 thiserror = "1.0"

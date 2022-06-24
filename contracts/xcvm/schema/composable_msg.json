@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ComposableMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "x_c_v_m"
+      ],
+      "properties": {
+        "x_c_v_m": {
+          "type": "object",
+          "required": [
+            "funds",
+            "program"
+          ],
+          "properties": {
+            "funds": {
+              "$ref": "#/definitions/XCVMTransfer"
+            },
+            "program": {
+              "$ref": "#/definitions/XCVMProgram_for_Array_of_XCVMInstruction_for_XCVMNetwork_and_Array_of_uint8_and_Array_of_uint8_and_XCVMTransfer"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "XCVMInstruction_for_XCVMNetwork_and_Array_of_uint8_and_Array_of_uint8_and_XCVMTransfer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "transfer"
+          ],
+          "properties": {
+            "transfer": {
+              "type": "object",
+              "required": [
+                "assets",
+                "to"
+              ],
+              "properties": {
+                "assets": {
+                  "$ref": "#/definitions/XCVMTransfer"
+                },
+                "to": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "uint8",
+                    "minimum": 0.0
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "call"
+          ],
+          "properties": {
+            "call": {
+              "type": "object",
+              "required": [
+                "encoded"
+              ],
+              "properties": {
+                "encoded": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "uint8",
+                    "minimum": 0.0
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "spawn"
+          ],
+          "properties": {
+            "spawn": {
+              "type": "object",
+              "required": [
+                "assets",
+                "network",
+                "program"
+              ],
+              "properties": {
+                "assets": {
+                  "$ref": "#/definitions/XCVMTransfer"
+                },
+                "network": {
+                  "$ref": "#/definitions/XCVMNetwork"
+                },
+                "program": {
+                  "$ref": "#/definitions/XCVMProgram_for_Array_of_XCVMInstruction_for_XCVMNetwork_and_Array_of_uint8_and_Array_of_uint8_and_XCVMTransfer"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "XCVMNetwork": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "XCVMProgram_for_Array_of_XCVMInstruction_for_XCVMNetwork_and_Array_of_uint8_and_Array_of_uint8_and_XCVMTransfer": {
+      "type": "object",
+      "required": [
+        "instructions",
+        "nonce"
+      ],
+      "properties": {
+        "instructions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/XCVMInstruction_for_XCVMNetwork_and_Array_of_uint8_and_Array_of_uint8_and_XCVMTransfer"
+          }
+        },
+        "nonce": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "XCVMTransfer": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "format": "uint128",
+        "minimum": 0.0
+      }
+    }
+  }
+}
