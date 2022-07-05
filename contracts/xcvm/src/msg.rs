@@ -5,18 +5,28 @@ use std::collections::VecDeque;
 use xcvm_core::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
-    #[serde(rename = "et_phone_home")]
-    ETPhoneHome { amount_in: Displayed<u128>, amount_out: Displayed<u128> }
+pub struct InstantiateMsg {
+    pub max_capacity: u8,
+    pub ownable_id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum QueryMsg {}
+pub enum ExecuteMsg {
+    // consumes percentage of remaining potion
+    #[serde(rename = "consume")]
+    Consume { amount: u8 },
+    // transfers ownership
+    #[serde(rename = "transfer")]
+    Transfer { to: Addr },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum QueryMsg {
+    GetCurrentAmount {},
+    GetOwner {},
+}
 
 #[non_exhaustive]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

@@ -12,21 +12,28 @@ fn ratio_one() -> Amount {
 }
 
 // Available protocols
-use xcvm_protocols::{Swap, SwapError};
+use xcvm_protocols::{Swap, SwapError, Mint, MintError};
 
 // Instantiation of the contract, does nothing.
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
     _: Env,
-    _: MessageInfo,
-    _: InstantiateMsg,
+    info: MessageInfo,
+    msg: InstantiateMsg,
 ) -> Result<Response, HackError> {
-    deps.storage.set(STATE_KEY, &to_vec(&State {})?);
+    let state = State {
+        owner: info.sender,
+        issuer: info.sender,
+        max_capacity: msg.max_capacity,
+        current_capacity: msg.max_capacity,
+    };
+    deps.api.debug("Instantiating contract");
+    deps.storage.set(STATE_KEY, &to_vec(&state)?);
     Ok(Response::new()
-        .add_attribute("unleash", "XCVM")
-        .add_attribute("she", "XCVme")
-        .add_attribute("he", "XCVyou"))
+        .add_attribute("max_capacity", msg.max_capacity)
+        .add_attribute("issuer", info.sender)
+    )
 }
 
 // Actual execution of the contract.
@@ -39,73 +46,48 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response<ComposableMsg>, HackError> {
     match msg {
-        ExecuteMsg::ETPhoneHome {
-            amount_in: Displayed(amount_in),
-            amount_out: Displayed(amount_out),
+        ExecuteMsg::Consume {
+            amount: msg.amount,
         } => {
-            deps.api.debug("ET Phone Home");
+            deps.api.debug("Consume consume");
+            // hex encoded picasso address
             let user_addr = hex::decode(&info.sender.as_bytes()[2..])
-                .map_err(|_| HackError::Std(StdError::generic_err("Impossible; QED;")))?;
+            .map_err(|_| HackError::Std(StdError::generic_err("Impossible; QED;")))?;
+
+            let program: Program = (|| {
+                Ok()
+            })()
+        },
+        ExecuteMsg::Transfer {
+            to: msg.to,
+        } => {
+            deps.api.debug("Minting");
+            // hex encoded picasso address
+            let user_addr = hex::decode(&info.sender.as_bytes()[2..])
+            .map_err(|_| HackError::Std(StdError::generic_err("Impossible; QED;")))?;
             let program: Program = (|| {
                 Ok(
-                    XCVMProgramBuilder::from(Some("ET_Parent".into()), XCVMNetwork::PICASSO)
-                        .spawn::<_, SwapError>(
-                            Some("ET_Children".into()),
+                    XCVMProgramBuilder::from(Some("Mint_parent".into()), XCVMNetwork::PICASSO)
+                        .spawn::<_, MintError>(
+                            Some("Mint_children".into()),
                             XCVMNetwork::ETHEREUM,
                             Vec::new(),
-                            XCVMTransfer::from([(XCVMAsset::PICA, ratio_one())]),
-                            |child| {
-                                Ok(child
-                                    .call(Swap::new(
-                                        XCVMAsset::PICA,
-                                        XCVMAsset::USDC,
-                                        amount_in,
-                                        amount_out,
+                            (),
+                            |f| {
+                                Ok(f.call(Mint::new(
+                                        to,
+                                        "ownable-1"
                                     ))?
-                                    .spawn::<_, SwapError>(
-                                        Some("ET_Cousin".into()),
-                                        XCVMNetwork::PICASSO,
-                                        Vec::new(),
-                                        XCVMTransfer::from([
-                                            (XCVMAsset::PICA, ratio_one()),
-                                            (XCVMAsset::USDC, ratio_one()),
-                                        ]),
-                                        |child| {
-                                            Ok(child.transfer(
-                                                user_addr,
-                                                XCVMTransfer::from([
-                                                    (XCVMAsset::PICA, ratio_one()),
-                                                    (XCVMAsset::USDC, ratio_one()),
-                                                ]),
-                                            ))
-                                        },
-                                    )?)
+                                )
                             },
                         )?
                         .build(),
                 )
             })()
-            .map_err(|_: SwapError| {
+            .map_err(|_: MintError| {
                 HackError::Std(StdError::generic_err("Couldn't build XCVM program."))
             })?;
-            deps.api.debug("ET Program Transmit");
-            let actual_balance = deps
-                .querier
-                .query::<BalanceResponse>(&QueryRequest::Bank(BankQuery::Balance {
-                    address: env.contract.address.into(),
-                    denom: "1".into(), // heh
-                }))?
-                .amount
-                .amount
-                .u128();
-            Ok(
-                Response::new().add_message(CosmosMsg::Custom(ComposableMsg::XCVM {
-                    salt: Vec::new(),
-                    funds: XCVMTransfer([(XCVMAsset::PICA, Displayed(actual_balance))].into()),
-                    program,
-                })),
-            )
-        }
+        },
     }
 }
 
@@ -113,3 +95,4 @@ pub fn execute(
 pub fn query(_: Deps, _: Env, _: QueryMsg) -> StdResult<QueryResponse> {
     StdResult::Err(StdError::generic_err("Nothing to extract."))
 }
+
