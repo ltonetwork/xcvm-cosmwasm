@@ -3,16 +3,69 @@ use crate::msg::{ComposableMsg, ExecuteMsg, InstantiateMsg, Program, QueryMsg};
 use crate::state::{State, STATE_KEY};
 use cosmwasm_std::{
     entry_point, to_vec, BalanceResponse, BankQuery, CosmosMsg, Deps, DepsMut, Env, MessageInfo,
-    QueryRequest, QueryResponse, Response, StdError, StdResult,
+    QueryRequest, QueryResponse, Response, StdError, StdResult, Addr,
 };
 use xcvm_core::*;
+use ethabi::{encode, ethereum_types::H160, Function, Param, ParamType, StateMutability, Token};
 
 fn ratio_one() -> Amount {
     Amount::Ratio(100)
 }
 
 // Available protocols
-use xcvm_protocols::{Swap, SwapError, Mint, MintError};
+use xcvm_protocols::{Swap, SwapError};
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Mint {
+    to: Addr,
+    ownableId: String,
+}
+
+impl Mint {
+    pub fn new(to: Addr, ownableId: String) -> Self {
+        Mint { to, ownableId }
+    }
+
+    pub fn ethereum_prototype() -> Function {
+        Function {
+            name: "mint".to_owned(),
+            inputs: vec![
+                Param { name: "to".into(), kind: ParamType::Address, internal_type: None },
+                Param { name: "ownableId".into(), kind: ParamType::String, internal_type: None },
+            ],
+            outputs: vec![],
+            constant: None,
+            state_mutability: StateMutability::Payable,
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum MintError {
+    UnsupportedNetwork,
+    EncodingFailed,
+}
+
+impl XCVMProtocol<XCVMNetwork> for Mint {
+    type Error = MintError;
+    fn serialize(&self, network: XCVMNetwork) -> Result<Vec<u8>, Self::Error> {
+        match network {
+            XCVMNetwork::ETHEREUM => {
+                let contract_address =
+                    H160::from_str("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9")
+                        .expect("impossible");
+                let encoded_call = Self::ethereum_prototype()
+                    .encode_input(&[Token::Address(self.to), Token::String(self.ownableId)])
+                    .map_err(|_| MintError::EncodingFailed)?;
+                Ok(encode(]).into())
+                    // Ok(encode(&[Token::Address(contract_address), Token::Bytes(encoded_call)]).into())
+            },
+            _ => Err(MintError::UnsupportedNetwork),
+        }
+    }
+}
+
+
 
 // Instantiation of the contract, does nothing.
 #[entry_point]
@@ -53,13 +106,12 @@ pub fn execute(
             // hex encoded picasso address
             let user_addr = hex::decode(&info.sender.as_bytes()[2..])
             .map_err(|_| HackError::Std(StdError::generic_err("Impossible; QED;")))?;
-
             let program: Program = (|| {
                 Ok()
             })()
-        },
-        ExecuteMsg::Transfer {
-            to: msg.to,
+        }
+        ExecuteMsg::Mint {
+            owner: Displayed(msg.owner.into()),
         } => {
             deps.api.debug("Minting");
             // hex encoded picasso address
@@ -75,7 +127,7 @@ pub fn execute(
                             (),
                             |f| {
                                 Ok(f.call(Mint::new(
-                                        to,
+                                        owner,
                                         "ownable-1"
                                     ))?
                                 )
@@ -87,7 +139,20 @@ pub fn execute(
             .map_err(|_: MintError| {
                 HackError::Std(StdError::generic_err("Couldn't build XCVM program."))
             })?;
-        },
+        }
+        ExecuteMsg::Transfer {
+            to: msg.to,
+        } => {
+            deps.api.debug("Transferring");
+            let user_addr = hex::decode(&info.sender.as_bytes()[2..])
+            .map_err(|_| HackError::Std(StdError::generic_err("Impossible; QED;")))?;
+            let program: Program = (|| {
+                Ok()
+            })()
+            .map_err(|_: MintError| {
+                HackError::Std(StdError::generic_err("Couldn't build XCVM program."))
+            })?;
+        }
     }
 }
 
@@ -95,4 +160,3 @@ pub fn execute(
 pub fn query(_: Deps, _: Env, _: QueryMsg) -> StdResult<QueryResponse> {
     StdResult::Err(StdError::generic_err("Nothing to extract."))
 }
-

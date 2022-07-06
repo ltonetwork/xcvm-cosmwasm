@@ -19,6 +19,9 @@ pub enum ExecuteMsg {
     // transfers ownership
     #[serde(rename = "transfer")]
     Transfer { to: Addr },
+    // mints on eth side
+    #[serde(rename = "mint")]
+    Mint { owner: Displayed<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

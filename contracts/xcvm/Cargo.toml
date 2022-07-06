@@ -38,6 +38,7 @@ thiserror = "1.0"
 hex = { version = "0.4", default-features = false }
 xcvm-core = { git = "https://github.com/ComposableFi/composable", rev = "82f39605fb8c06bfd4e45672dbbd6fd6ae09ddb6", default-features = false, features = [ "std" ] }
 xcvm-protocols = { git = "https://github.com/ComposableFi/composable", rev = "82f39605fb8c06bfd4e45672dbbd6fd6ae09ddb6", default-features = false }
+ethabi = "17.1.0"
 
 [dev-dependencies]
 cosmwasm-schema = { path = "../../packages/schema" }
