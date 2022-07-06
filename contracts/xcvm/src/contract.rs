@@ -17,12 +17,12 @@ use xcvm_protocols::{Swap, SwapError};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Mint {
-    to: Addr,
+    to: H160,
     ownableId: String,
 }
 
 impl Mint {
-    pub fn new(to: Addr, ownableId: String) -> Self {
+    pub fn new(to: H160, ownableId: String) -> Self {
         Mint { to, ownableId }
     }
 
@@ -52,13 +52,12 @@ impl XCVMProtocol<XCVMNetwork> for Mint {
         match network {
             XCVMNetwork::ETHEREUM => {
                 let contract_address =
-                    H160::from_str("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9")
+                    H160::from_str("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512")
                         .expect("impossible");
                 let encoded_call = Self::ethereum_prototype()
                     .encode_input(&[Token::Address(self.to), Token::String(self.ownableId)])
                     .map_err(|_| MintError::EncodingFailed)?;
-                Ok(encode(]).into())
-                    // Ok(encode(&[Token::Address(contract_address), Token::Bytes(encoded_call)]).into())
+                Ok(encode(&[Token::Address(contract_address), Token::Bytes(encoded_call)]).into())
             },
             _ => Err(MintError::UnsupportedNetwork),
         }
@@ -117,6 +116,7 @@ pub fn execute(
             // hex encoded picasso address
             let user_addr = hex::decode(&info.sender.as_bytes()[2..])
             .map_err(|_| HackError::Std(StdError::generic_err("Impossible; QED;")))?;
+            let owner_eth_addr =  H160::from_str(&owner);
             let program: Program = (|| {
                 Ok(
                     XCVMProgramBuilder::from(Some("Mint_parent".into()), XCVMNetwork::PICASSO)
@@ -127,7 +127,7 @@ pub fn execute(
                             (),
                             |f| {
                                 Ok(f.call(Mint::new(
-                                        owner,
+                                        owner_eth_addr,
                                         "ownable-1"
                                     ))?
                                 )
@@ -160,3 +160,4 @@ pub fn execute(
 pub fn query(_: Deps, _: Env, _: QueryMsg) -> StdResult<QueryResponse> {
     StdResult::Err(StdError::generic_err("Nothing to extract."))
 }
+

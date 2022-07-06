@@ -21,7 +21,7 @@ pub enum ExecuteMsg {
     Transfer { to: Addr },
     // mints on eth side
     #[serde(rename = "mint")]
-    Mint { owner: Displayed<String> },
+    Mint { owner: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
