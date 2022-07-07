@@ -36,9 +36,12 @@ serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 sha2 = "0.9.1"
 thiserror = "1.0"
 hex = { version = "0.4", default-features = false }
-xcvm-core = { git = "https://github.com/ComposableFi/composable", rev = "82f39605fb8c06bfd4e45672dbbd6fd6ae09ddb6", default-features = false, features = [ "std" ] }
+xcvm-core = { git = "https://github.com/ComposableFi/composable", rev = "82f39605fb8c06bfd4e45672dbbd6fd6ae09ddb6", default-features = false, features = [
+    "std",
+] }
 xcvm-protocols = { git = "https://github.com/ComposableFi/composable", rev = "82f39605fb8c06bfd4e45672dbbd6fd6ae09ddb6", default-features = false }
-ethabi = "17.1.0"
+ethabi = { version = "17.1.0", default-features = false }
+ethereum-types = { version = "0.13.1", default-features = false }
 
 [dev-dependencies]
 cosmwasm-schema = { path = "../../packages/schema" }

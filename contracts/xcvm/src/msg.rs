@@ -1,4 +1,4 @@
-use cosmwasm_std::CustomMsg;
+use cosmwasm_std::{Addr, CustomMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;

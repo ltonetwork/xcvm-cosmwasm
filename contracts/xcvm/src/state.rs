@@ -10,4 +10,3 @@ pub struct State {
     pub max_capacity: u8,
     pub current_capacity: u8,
 }
-
