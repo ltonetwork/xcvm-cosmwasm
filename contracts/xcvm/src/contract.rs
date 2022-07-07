@@ -110,7 +110,7 @@ pub fn execute(
             })()
         }
         ExecuteMsg::Mint {
-            owner: Displayed(msg.owner.into()),
+            owner: msg.owner.into(),
         } => {
             deps.api.debug("Minting");
             // hex encoded picasso address
